@@ -46,15 +46,19 @@ public class Main {
        String[] str4=in.nextLine().split(" ");
        operators=new HashSet<>();
        operators.addAll(Arrays.asList(str4));
-       in.close();
-       in=new Scanner(new File("token字序列"));
        inputSeq1=new ArrayList<>();
        inputSeq=new ArrayList<>();
-       while (in.hasNext()){
-           String token=in.nextLine();
-           inputSeq.add(dealToken(token));//用这个来进行规约操作
-           inputSeq1.add(dealToken1(token));//用这个来进行判断,进行语义分析
-       }
+//       while (in.hasNext()){
+//           String token=in.nextLine();
+//           inputSeq.add(dealToken(token));//用这个来进行规约操作
+//           inputSeq1.add(dealToken1(token));//用这个来进行判断,进行语义分析
+//       }
+       LexicalAnalysis lexicalAnalysis=new LexicalAnalysis();
+       List<String> list=lexicalAnalysis.list;
+        for (String s : list) {
+            inputSeq.add(dealToken(s));
+            inputSeq1.add(dealToken1(s));
+        }
     }
 
     private static String dealToken(String s){

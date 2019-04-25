@@ -1,5 +1,5 @@
-关键字: AND ELSE WHILE DO IF
-标识符: a b c d e f then
+关键字: FLOAT OR AND ELSE WHILE THEN DOUBLE DO IF INT
+标识符: a b c d e f
 常数: 3 4 5 7
 其他运算符,界符:
-==  (  )  *  +  ;  {  =  }  /
+==  (  )  *  ;  {  +  <  =  }  >  

@@ -1,11 +1,8 @@
 import java.util.*;
 
-public class GramAna1{
+class GramAna1{
     private List<Production> productions;//产生式
-    private Set<String> table;//符号表
-    private Set<String> nonTerminals;//非终结符
     private Map<String,Integer> indexes=new HashMap<>();
-    private List<String> cols;
     private String[][] analyticalTable={{"","+","*","(",")","id","num","#","E","T","F"},
             {"0","","","S4","","S5","S12","","1","2","3"},
             {"1","S7","","","","","","acc","","",""},
@@ -23,8 +20,8 @@ public class GramAna1{
     };
     List<Production> productionList;
     private List<String> inputSeq;
-    int beg;
-    int end;
+    private int beg;
+    private int end;
     // private String[][] analyticalTable;
     ;//分析表
     public GramAna1(List<String> inputSeq_ ,int beg_,int end_) {
@@ -103,12 +100,14 @@ public class GramAna1{
 
     private void init(){
         productions=new ArrayList<>();
-        nonTerminals=new HashSet<>();
+        //非终结符
+        Set<String> nonTerminals = new HashSet<>();
         //FIRST符号集
         Map<String, HashSet<String>> FIRST = new HashMap<>();
         //FOLLOW符号集
         Map<String, HashSet<String>> FOLLOW = new HashMap<>();
-        table=new HashSet<>();
+        //符号表
+        Set<String> table = new HashSet<>();
         productions.add(new Production("E1", Collections.singletonList("E")));
         productions.add(new Production("E",Arrays.asList("E","+","T")));
         productions.add(new Production("E", Collections.singletonList("T")));
@@ -117,7 +116,6 @@ public class GramAna1{
         productions.add(new Production("F",Arrays.asList("(","E",")")));
         productions.add(new Production("F", Collections.singletonList("id")));
         productions.add(new Production("F", Collections.singletonList("num")));
-        cols=Arrays.asList("+","*","(",")","id","num","#","E","T","F");
         indexes=new HashMap<>();
         indexes.put("+",0);
         indexes.put("*",1);
@@ -129,7 +127,7 @@ public class GramAna1{
         indexes.put("E",7);
         indexes.put("T",8);
         indexes.put("F",9);
-        table=new HashSet<>();
+        table =new HashSet<>();
         table.addAll(Arrays.asList("+","*","(",")","id","num"));
         nonTerminals.addAll(Arrays.asList("E","T","F"));
     }
