@@ -73,9 +73,9 @@ public class LexicalAnalysis{
         index=0;
         while (index<chars.length){
             int res=judge_token(chars);
-            if(res==-2){
+            if(res==-2&&flag){
                 System.out.println("第"+row+"行出现错误,"+"浮点数错误,出现多个'.'");
-            }else if(res==-1){
+            }else if(res==-1&&flag){
                 System.out.println("第"+row+"行出现错误,出现不该出现的字符");
             }else {
                 int i=0;
@@ -236,7 +236,7 @@ public class LexicalAnalysis{
         }
         int token_num=0;//数组从0开始
         if((ch>='a' && ch <= 'z') || (ch >= 'A' &&ch <= 'Z')|| ch=='_'){
-            while ((ch>='a' && ch <= 'z') || (ch >= 'A' &&ch <= 'Z') || (ch >= '0' && ch <= '9')){
+            while ((ch>='a' && ch <= 'z') || (ch >= 'A' &&ch <= 'Z') || (ch >= '0' && ch <= '9')||(ch=='[')||(ch==']')){
                 tokens[token_num]=ch;
                 token_num++;
                 index++;
@@ -246,6 +246,9 @@ public class LexicalAnalysis{
                 ch=chars[index];
             }
             String key=new String(tokens).substring(0,token_num);
+            if(key.matches("^double\\[(\\d+)]*")||key.matches("^int\\[(\\d+)]*")||key.matches("^float\\[(\\d+)]*")){
+                return 1;
+            }
             if (keyWords.contains(key)){
                 return 1;//关键字
             }

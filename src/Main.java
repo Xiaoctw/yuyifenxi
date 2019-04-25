@@ -1,17 +1,16 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.*;
 
 public class Main {
-    private static Set<String> keyWords;
-    private static Set<String> types;
-    private static Set<String> ids;
-    private static Set<String> nums;
-    private static Set<String> operators;
+    private static Set<String> types;//类型种类,只有int,float,double这几种
     private static List<String> inputSeq;
     private static List<String> inputSeq1;
     private static List<ID> idList;
+    private static int offset;
     private static List<Siyuanzu> siyuanzuResList;
+    private static Map<String,String> idToType;
     public static void main(String[] args) {
         try {
             init();
@@ -19,40 +18,48 @@ public class Main {
             e.printStackTrace();
         }
         parseStateBlock(0,inputSeq1.size()-1);
-        for (Siyuanzu siyuanzu : siyuanzuResList) {
-            System.out.println(siyuanzu.ope+" "+siyuanzu.arg1+" "+siyuanzu.arg2+" "+siyuanzu.res);
+        try {
+            PrintStream stream=new PrintStream("四元式序列");
+            for (Siyuanzu siyuanzu : siyuanzuResList) {
+                stream.println(siyuanzu.ope+" "+siyuanzu.arg1+" "+siyuanzu.arg2+" "+siyuanzu.res);
+            }
+            stream.close();
+            stream=new PrintStream("变量符号表");
+            stream.println("    变量类型     变量名      宽度      偏移");
+            for (ID id : idList) {
+                stream.printf("%10s%10s%10d%10d\n",id.type,id.name,id.width,id.offset);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         }
-        System.out.println();
+
+
     }
     private static void init() throws FileNotFoundException {
         offset=0;//初始化偏置
         siyuanzuResList=new ArrayList<>();
+        idToType=new HashMap<>();
         idList=new ArrayList<>();
         types=new HashSet<>();
         types.addAll(Arrays.asList("float","int","double"));
         Scanner in=new Scanner(new File("符号表"));
         String line=in.nextLine();
         String[] strs1=line.split(" ");
-        keyWords=new HashSet<>();
+        Set<String> keyWords = new HashSet<>();
         keyWords.addAll(Arrays.asList(strs1).subList(1, strs1.length));
         String string=in.nextLine();
         String[] strs2=string.split(" ");
-        ids=new HashSet<>();
+        Set<String> ids = new HashSet<>();
         ids.addAll(Arrays.asList(strs2).subList(1,strs2.length));
         String[] strs3=in.nextLine().split(" ");
-        nums=new HashSet<>();
+        Set<String> nums = new HashSet<>();
         nums.addAll(Arrays.asList(strs3).subList(1,strs3.length));
        in.nextLine();
        String[] str4=in.nextLine().split(" ");
-       operators=new HashSet<>();
+        Set<String> operators = new HashSet<>();
        operators.addAll(Arrays.asList(str4));
        inputSeq1=new ArrayList<>();
        inputSeq=new ArrayList<>();
-//       while (in.hasNext()){
-//           String token=in.nextLine();
-//           inputSeq.add(dealToken(token));//用这个来进行规约操作
-//           inputSeq1.add(dealToken1(token));//用这个来进行判断,进行语义分析
-//       }
        LexicalAnalysis lexicalAnalysis=new LexicalAnalysis();
        List<String> list=lexicalAnalysis.list;
         for (String s : list) {
@@ -98,7 +105,8 @@ public class Main {
             }
             dealWithPD(lo,index);
             parseStateBlock(index+1,hi);
-        }else if(types.contains(token)){//这是一个声明语句
+            //添加了数组的处理过程,利用正则表达式匹配数组
+        }else if(types.contains(token)||token.matches("^double\\[(\\d+)]*")||token.matches("^int\\[(\\d+)]*")||token.matches("^float\\[(\\d+)]*")){//这是一个声明语句
             int index=lo;
             while (index<=hi&&!inputSeq.get(index).equals(";")){
                 index++;
@@ -194,7 +202,7 @@ public class Main {
      * @param beg
      * @param end
      */
-    private static int offset;
+
 
     /**
      * 这个函数处理声明语句
@@ -206,10 +214,24 @@ public class Main {
         if(beg+1>end){
             return;
         }
-        ID id=new ID(inputSeq.get(beg),inputSeq.get(beg+1));
-        id.offset=offset;
-        offset+=id.width;
-        idList.add(id);
+        String idName=inputSeq1.get(beg+1);
+        if(contains(idName)){
+            System.out.println("ERROR LINE "+(beg+1)+":标识符"+idName+"已经定义过,重复定义");
+            return;
+        }
+            ID id = new ID(inputSeq1.get(beg), idName);
+            idToType.put(idName,inputSeq1.get(beg));
+            id.offset = offset;
+            offset += id.width;
+            idList.add(id);
+    }
+    private static boolean contains(String name){
+        for (ID id : idList) {
+            if (id.name.equals(name)){
+                return true;
+            }
+        }
+        return false;
     }
     private static void dealWithZX(int beg,int end){
         GramAna1 ana1=new GramAna1(inputSeq,beg+2,end-1);//处理真正执行的部分,不包括最后的赋值,注意去掉最后的分号
@@ -232,9 +254,13 @@ public class Main {
                     Siyuanzu siyuanzu=new Siyuanzu();
                     siyuanzu.arg1=inputSeq1.get(i1-1);
                     siyuanzu.arg2=inputSeq1.get(i1+1);
-                    siyuanzu.ope=ope;
-                    siyuanzu.res=temp;
-                    siyuanzuResList.add(siyuanzu);
+                        if (contains1(siyuanzu.arg1, i1) || contains1(siyuanzu.arg2, i1)) {
+                            System.out.println("ERROR LINE " + i1 + ":数组类型不能进行加减运算");
+                            return;
+                        }
+                        siyuanzu.ope = ope;
+                        siyuanzu.res = temp;
+                        siyuanzuResList.add(siyuanzu);
                 }else {
                     for (int i = beg; i <= end ; i++) {
                         if(inputSeq1.get(i).equals(ope)){
@@ -251,16 +277,30 @@ public class Main {
                     }else if(inputSeq1.get(i1-1).equals(")")){
                         siyuanzu.arg1="t"+(index-1);
                         siyuanzu.arg2=inputSeq1.get(i1+1);
+                            if (contains1(siyuanzu.arg2, i1)) {
+                                System.out.println("ERROR LINE " + i1 + ":数组类型不能进行加减运算");
+                                return;
+                            }
                         siyuanzu.res=temp;
                         siyuanzu.ope=ope;
-                    }else if(inputSeq1.get(i1-1).equals("(")){
+                    }else if(inputSeq1.get(i1+1).equals("(")){
                         siyuanzu.arg1="t"+(index-1);
                         siyuanzu.arg2=inputSeq1.get(i1-1);
-                        siyuanzu.res=temp;
-                        siyuanzu.ope=ope;
+
+                            if (contains1(siyuanzu.arg2, i1)) {
+                                System.out.println("ERROR LINE " + i1 + ":数组类型不能进行加减运算");
+                                return;
+                            }
+                            siyuanzu.res = temp;
+                            siyuanzu.ope = ope;
+
                     }else{
                         siyuanzu.arg1="t"+(index-1);
                         siyuanzu.arg2=inputSeq1.get(i1+1);//默认是下一个输入符号
+                        if (contains1(siyuanzu.arg1, i1) || contains1(siyuanzu.arg2, i1)) {
+                                System.out.println("ERROR LINE " + i1 + ":数组类型不能进行加减运算");
+                                return;
+                            }
                         siyuanzu.res=temp;
                         siyuanzu.ope=ope;
                     }
@@ -284,7 +324,13 @@ public class Main {
             siyuanzuResList.add(siyuanzu);
         }
     }
-
+    private static boolean contains1(String s,int i)  {
+        String s1=idToType.get(s);
+        if(s1==null){
+           return false;
+        }
+        return s1.matches("^double\\[(\\d+)]*") || s1.matches("^int\\[(\\d+)]*") || s1.matches("^float\\[(\\d+)]*");
+    }
     /**
      * 得到一个产生式中存在的操作符,
      * 通过遍历实现
@@ -386,7 +432,6 @@ public class Main {
                tsiyuanzu.res="true";
                Siyuanzu fsiyuanzu=new Siyuanzu();
                fsiyuanzu.ope="j"+inputSeq1.get(beg+1);
-               //tsiyuanzu.arg1=inputSeq1.get(beg);
                fsiyuanzu.res="false";
                siyuanzuResList.add(tsiyuanzu);
                siyuanzuResList.add(fsiyuanzu);
@@ -408,15 +453,21 @@ class ID{
     int offset;
     int width;
 
-    public ID(String type, String name) {
+    ID(String type, String name) {
         this.type = type;
         this.name = name;
         if(type.equals("int")){
             width=4;
         }else if(type.equals("float")){
             width=4;
-        }else {
+        }else if (type.equals("double")){
             width=8;
+        }else if (type.matches("^float\\[(\\d+)]*")){
+            width= Integer.parseInt(type.substring(6,type.length()-1))*4;
+        }else if(type.matches("^int\\[(\\d+)]*")){
+            width= Integer.parseInt(type.substring(4,type.length()-1))*4;
+        }else {
+            width= Integer.parseInt(type.substring(7,type.length()-1))*8;
         }
     }
 }
@@ -427,5 +478,8 @@ class Siyuanzu{
     String arg2;
     String res;
 }
+
+//class NotFoundIdException extends Exception{
+//}
 
 

@@ -1,0 +1,10 @@
+    变量类型     变量名      宽度      偏移
+       int         a         4         0
+    double         b         8         4
+       int         c         4        12
+       int         d         4        16
+ float[18]       arr        72        20
+    int[4]    array1        16        92
+    double         e         8       108
+     float         f         4       116
+ double[3]        fd        24       120

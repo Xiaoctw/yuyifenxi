@@ -1,10 +1,26 @@
 int a;
 double b;
 int c;
+int d;
+float[18] arr;
+int[4] array1;
 double e;
 float f;
+/*
+这里定义一个错误
+*/
+int f;
+double[3] fd;
 b=4;
+a=a+d+c;
+b=8*f*6*e;
+b=array1+c;
 do {b=b+a;
+if (a==4) then {
+c=e*7;
+} else {
+d=d*4;
+}
 } while (f==e or b<a);
 a=3;
 f=5;
@@ -14,6 +30,8 @@ do {c=c+3;
 e=4*b;
 if (a==4) then {
 c=c*7;
+do {c=c+3;
+} while (a<b and c>e or e==f);
 } else {
 d=d*4;
 }

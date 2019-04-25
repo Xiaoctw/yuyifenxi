@@ -1,5 +1,5 @@
-关键字: FLOAT OR AND ELSE WHILE THEN DOUBLE DO IF INT
-标识符: a b c d e f
-常数: 3 4 5 7
+关键字: FLOAT OR FLOAT[18] DO INT INT[4] AND ELSE THEN WHILE DOUBLE IF DOUBLE[3]
+标识符: arr a b c d e f array1 fd
+常数: 3 4 5 6 7 8
 其他运算符,界符:
-==  (  )  *  ;  {  +  <  =  }  >  
+==  (  )  *  ;  +  {  <  =  }  >  
