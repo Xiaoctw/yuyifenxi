@@ -47,7 +47,9 @@ class GramAna1{
         for (int i = beg; i <=end ; i++) {
             list.add(inputSeq.get(i));
         }
-        list.add("#");
+        if (!list.get(list.size()-1).equals("#")){
+            list.add("#");
+        }
         int j=0;
         while (true) {
             String ch=list.get(j);

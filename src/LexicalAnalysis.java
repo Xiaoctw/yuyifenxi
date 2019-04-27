@@ -12,8 +12,10 @@ public class LexicalAnalysis{
     private Map<Integer,HashSet<String>> table1 =new HashMap<>();//关系表
     private Set<String> table2=new HashSet<>();//界符,运算符
     private PrintStream stream;
+    private Map<Integer,Integer> tokenToLine;//把token对应的行数和line对应的行数进行映射
     List<String> list=new ArrayList<>();
-    LexicalAnalysis() {
+    LexicalAnalysis(Map<Integer,Integer> map) {
+        tokenToLine=map;
         File file = new File("input");
         Scanner in = null;
         try {
@@ -96,12 +98,14 @@ public class LexicalAnalysis{
                         table1.get(1).add(s.toUpperCase());
                         list.add(s+"\t<"+s.toUpperCase()+",_>");
                         stream.println(s+"\t<"+s.toUpperCase()+",_>");
+                        tokenToLine.put(list.size()-1,row);
                     }else if(res==2) {
                         if (!table1.containsKey(res)){
                             table1.put(res,new HashSet<>());
                         }
                         table1.get(res).add(s);
                         list.add(s+"\t<标识符,"+s+">");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println(s+"\t<标识符,"+s+">");
                     }else if(res==3){
                         if (!table1.containsKey(res)){
@@ -109,113 +113,141 @@ public class LexicalAnalysis{
                         }
                         table1.get(res).add(s);
                         list.add(s+"\t<常数,"+s+">");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println(s+"\t<常数,"+s+">");
                     }else if(res==4){
                         list.add("(\t<左括号,_>");
                         stream.println("(\t<左括号,_>");
                         table2.add("(");
+                        tokenToLine.put(list.size()-1,row);
                     }else if(res==5){
                         list.add(")\t<右括号,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println(")\t<右括号,_>");
                         table2.add(")");
                     }else if(res==6){
                         table2.add("{");
                         list.add("{\t<左大括号,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("{\t<左大括号,_>");
                     }else if(res==7){
                         table2.add("}");
                         list.add("}\t<右大括号,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("}\t<右大括号,_>");
                     }else if (res==8){
                         table2.add("++");
                         list.add("++\t<自增,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("++\t<自增,_>");
                     }else if(res==9){
                         table2.add("+");
                         list.add("+\t<加号,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("+\t<加号,_>");
                     }else if(res==10){
                         table2.add("--");
                         list.add("--\t<自减,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("--\t<自减,_>");
                     }else if(res==11){
                         table2.add("-");
                         list.add("-\t<减号,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("-\t<减号,_>");
                     }else if(res==12){
                         table2.add("*");
                         list.add("*\t<乘号,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("*\t<乘号,_>");
                     }else if(res==13){
                         list.add("*/\t<注释结尾,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("*/\t<注释结尾,_>");
                     }else if(res==15){
                         table2.add("/");
                         list.add("/\t<斜杠,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("/\t<斜杠,_>");
                     }else if(res==16){
                         table2.add("==");
                         list.add("==\t<判断相等,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("==\t<判断相等,_>");
                     }else if(res==17){
                         table2.add("=");
                         list.add("=\t<等号,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("=\t<等号,_>");
                     }else if(res==18){
                         table2.add(">=");
                         list.add(">=\t<大于等于,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println(">=\t<大于等于,_>");
                     }else if(res==19){
                         table2.add(">");
                         list.add(">\t<大于,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println(">\t<大于,_>");
                     }else if(res==20){
                         table2.add("<=");
                         list.add("<=\t<小于等于,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("<=\t<小于等于,_>");
                     }else if(res==21){
                         table2.add("<");
                         list.add("<\t<小于,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("<\t<小于,_>");
                     }else if(res==22){
                         table2.add(";");
                         list.add(";\t<分号,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println(";\t<分号,_>");
                     }else if(res==23){
                         table2.add("\"");
                         list.add("\"\t<引号,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("\"\t<引号,_>");
                     }else if(res==24){
                         table2.add("!=");
                         list.add("!=\t<不等号,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("!=\t<不等号,_>");
                     }else if(res==25){
                         table2.add("!");
                         list.add("!\t<取反,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("!\t<取反,_>");
                     }else if(res==26){
                         table2.add("#");
                         list.add("#\t<井号,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("#\t<井号,_>");
                     }else if(res==27){
                         table2.add(",");
                         list.add(",\t<逗号,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println(",\t<逗号,_>");
                     }else if(res==28) {
                         table2.add("&");
                         list.add("&\t<按位与,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("&\t<按位与,_>");
                     }else if(res==29){
                         table2.add("&&");
                         list.add("&&\t<与,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("&&\t<与,_>");
                     }else if(res==30){
                         table2.add("|");
                         list.add("|\t<按位或,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("|\t<按位或,_>");
                     }else{
                         table2.add("||");
                         list.add("||\t<或,_>");
+                        tokenToLine.put(list.size()-1,row);
                         stream.println("||\t<或,_>");
                     }
                 }

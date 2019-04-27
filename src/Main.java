@@ -1,4 +1,3 @@
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.*;
@@ -11,6 +10,7 @@ public class Main {
     private static int offset;
     private static List<Siyuanzu> siyuanzuResList;
     private static Map<String,String> idToType;
+    private static Map<Integer,Integer>  tokenToLine;
     public static void main(String[] args) {
         try {
             init();
@@ -21,7 +21,19 @@ public class Main {
         try {
             PrintStream stream=new PrintStream("四元式序列");
             for (Siyuanzu siyuanzu : siyuanzuResList) {
-                stream.println(siyuanzu.ope+" "+siyuanzu.arg1+" "+siyuanzu.arg2+" "+siyuanzu.res);
+                stream.printf("%s ",siyuanzu.ope);
+                if(siyuanzu.arg1==null){
+                    stream.print("_ ");
+                }else {
+                    stream.printf("%s ",siyuanzu.arg1);
+                }
+                if(siyuanzu.arg2==null){
+                    stream.print("_ ");
+                }else{
+                    stream.printf("%s ",siyuanzu.arg2);
+                }
+                stream.printf("%s \n",siyuanzu.res);
+               // stream.println(siyuanzu.ope+" "+siyuanzu.arg1+" "+siyuanzu.arg2+" "+siyuanzu.res);
             }
             stream.close();
             stream=new PrintStream("变量符号表");
@@ -38,29 +50,14 @@ public class Main {
     private static void init() throws FileNotFoundException {
         offset=0;//初始化偏置
         siyuanzuResList=new ArrayList<>();
+        tokenToLine=new HashMap<>();
         idToType=new HashMap<>();
         idList=new ArrayList<>();
         types=new HashSet<>();
         types.addAll(Arrays.asList("float","int","double"));
-        Scanner in=new Scanner(new File("符号表"));
-        String line=in.nextLine();
-        String[] strs1=line.split(" ");
-        Set<String> keyWords = new HashSet<>();
-        keyWords.addAll(Arrays.asList(strs1).subList(1, strs1.length));
-        String string=in.nextLine();
-        String[] strs2=string.split(" ");
-        Set<String> ids = new HashSet<>();
-        ids.addAll(Arrays.asList(strs2).subList(1,strs2.length));
-        String[] strs3=in.nextLine().split(" ");
-        Set<String> nums = new HashSet<>();
-        nums.addAll(Arrays.asList(strs3).subList(1,strs3.length));
-       in.nextLine();
-       String[] str4=in.nextLine().split(" ");
-        Set<String> operators = new HashSet<>();
-       operators.addAll(Arrays.asList(str4));
        inputSeq1=new ArrayList<>();
        inputSeq=new ArrayList<>();
-       LexicalAnalysis lexicalAnalysis=new LexicalAnalysis();
+       LexicalAnalysis lexicalAnalysis=new LexicalAnalysis(tokenToLine);
        List<String> list=lexicalAnalysis.list;
         for (String s : list) {
             inputSeq.add(dealToken(s));
@@ -216,7 +213,7 @@ public class Main {
         }
         String idName=inputSeq1.get(beg+1);
         if(contains(idName)){
-            System.out.println("ERROR LINE "+(beg+1)+":标识符"+idName+"已经定义过,重复定义");
+            System.out.println("ERROR LINE "+tokenToLine.get(beg+1)+":标识符"+idName+"已经定义过,重复定义");
             return;
         }
             ID id = new ID(inputSeq1.get(beg), idName);
@@ -255,7 +252,7 @@ public class Main {
                     siyuanzu.arg1=inputSeq1.get(i1-1);
                     siyuanzu.arg2=inputSeq1.get(i1+1);
                         if (contains1(siyuanzu.arg1, i1) || contains1(siyuanzu.arg2, i1)) {
-                            System.out.println("ERROR LINE " + i1 + ":数组类型不能进行加减运算");
+                            System.out.println("ERROR LINE " + tokenToLine.get(i1) + ":数组类型不能进行加减运算");
                             return;
                         }
                         siyuanzu.ope = ope;
@@ -278,7 +275,7 @@ public class Main {
                         siyuanzu.arg1="t"+(index-1);
                         siyuanzu.arg2=inputSeq1.get(i1+1);
                             if (contains1(siyuanzu.arg2, i1)) {
-                                System.out.println("ERROR LINE " + i1 + ":数组类型不能进行加减运算");
+                                System.out.println("ERROR LINE " + tokenToLine.get(i1) + ":数组类型不能进行加减运算");
                                 return;
                             }
                         siyuanzu.res=temp;

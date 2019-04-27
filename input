@@ -13,7 +13,10 @@ int f;
 double[3] fd;
 b=4;
 a=a+d+c;
-b=8*f*6*e;
+b=8*f*(6*(e+f)+4);
+/*
+这里同样定义一个错误
+*/
 b=array1+c;
 do {b=b+a;
 if (a==4) then {
